@@ -1,0 +1,4 @@
+name: prgcraft_s1_final_scene
+version: '0.1'
+main: com.github.nickxgrom.prgcraft_s1_final_scene.Prgcraft_s1_final_scene
+api-version: '1.21'
