@@ -1,0 +1,94 @@
+package com.github.nickxgrom.prgcraft_s1_final_scene;
+
+import org.bukkit.Location;
+import org.bukkit.Sound;
+import org.bukkit.World;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.scheduler.BukkitRunnable;
+
+/**
+ * Слушатель событий для обработки убийства дракона
+ */
+public class BlockPlaceListener implements Listener {
+    private final int PULL_HOLD_TIMER = 10;
+    private final int BAN_HOLD_TIMER = 10;
+    private final Prgcraft_s1_final_scene plugin;
+    private final ParticleUtils particleUtils;
+
+    public BlockPlaceListener(Prgcraft_s1_final_scene plugin) {
+        this.plugin = plugin;
+        this.particleUtils = new ParticleUtils(plugin);
+    }
+
+    /**
+     * Обработчик события убийства дракона
+     */
+    @EventHandler
+    public void onDragonDeath(EntityDeathEvent event) {
+        // Проверяем, что убитое существо - это Эндер Дракон
+        if (event.getEntity().getType() == EntityType.ENDER_DRAGON) {
+            Location dragonLocation = event.getEntity().getLocation();
+            World endWorld = dragonLocation.getWorld();
+
+            Location portalLocation = new Location(endWorld, 0, 64, 0);
+
+            Location sphereCenter = portalLocation.clone().add(0, 10, 0);
+
+            new BukkitRunnable() {
+                int ticks = 0;
+
+                @Override
+                public void run() {
+                    if (ticks >= 300 * 20) {
+                        cancel();
+                        return;
+                    }
+
+                    particleUtils.spawnParticleSphere(
+                            sphereCenter.getWorld(),
+                            sphereCenter.getX(),
+                            sphereCenter.getY(),
+                            sphereCenter.getZ(),
+                            5 // Радиус сферы
+                    );
+
+                    // Воспроизводим звук каждые 20 тиков (1 секунда)
+                    if (ticks % 20 == 0) {
+                        sphereCenter.getWorld().playSound(
+                            sphereCenter,
+                            Sound.BLOCK_PORTAL_AMBIENT,
+                            5.0f, // громкость
+                            0.8f  // тональность
+                        );
+                    }
+//                    todo: debug, вылет из сферы, звук
+
+
+                    ticks++;
+                }
+
+            }.runTaskTimer(plugin, 0, 1);
+
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    for (Player player : endWorld.getPlayers()) {
+                        particleUtils.pullPlayerToLocation(player, sphereCenter, 0.3, 2.0, BAN_HOLD_TIMER);
+                    }
+                }
+
+            }.runTaskLater(plugin, PULL_HOLD_TIMER * 20);
+        }
+    }
+
+    /**
+     * Запускает последовательность эффектов для игрока после убийства дракона
+     */
+    private void startDragonDeathSequence(Player player, Location dragonLocation) {
+        // Этот метод больше не используется
+    }
+}
