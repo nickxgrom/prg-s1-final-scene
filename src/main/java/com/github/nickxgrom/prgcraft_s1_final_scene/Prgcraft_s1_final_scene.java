@@ -1,11 +1,13 @@
 package com.github.nickxgrom.prgcraft_s1_final_scene;
 
 import org.bukkit.*;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.event.Listener;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 public final class Prgcraft_s1_final_scene extends JavaPlugin implements Listener {
 
@@ -55,6 +57,64 @@ public final class Prgcraft_s1_final_scene extends JavaPlugin implements Listene
     }
 
     /**
+     * Притягивает игрока к определенной точке, отключая гравитацию
+     * @param player Игрок, которого нужно притянуть
+     * @param targetLocation Точка, к которой притягивается игрок
+     * @param duration Длительность притягивания в тиках (20 тиков = 1 секунда)
+     * @param pullStrength Сила притягивания (рекомендуется 0.1 - 0.5)
+     * @param stopDistance Расстояние, на котором притягивание останавливается
+     */
+    public void pullPlayerToLocation(Player player, Location targetLocation, int duration, double pullStrength, double stopDistance) {
+        // Выключаем гравитацию у игрока
+        player.setGravity(false);
+
+        // Применяем притяжение в течение заданной длительности
+        new BukkitRunnable() {
+            int ticks = 0;
+
+            @Override
+            public void run() {
+                // Проверяем условия остановки
+                if (ticks >= duration || !player.isOnline() || player.isDead()) {
+                    // Включаем гравитацию обратно и останавливаем задачу
+                    player.setGravity(true);
+                    cancel();
+                    return;
+                }
+
+                Location playerLocation = player.getLocation();
+                double distance = playerLocation.distance(targetLocation);
+
+                // Если игрок достиг целевой точки
+                if (distance <= stopDistance) {
+                    player.setGravity(true);
+                    cancel();
+                    return;
+                }
+
+                // Вычисляем направление к целевой точке
+                Vector direction = targetLocation.toVector().subtract(playerLocation.toVector()).normalize();
+
+                // Применяем силу притягивания
+                Vector velocity = direction.multiply(pullStrength);
+                player.setVelocity(velocity);
+
+                // Создаем визуальный эффект частиц вокруг игрока
+                player.getWorld().spawnParticle(
+                    Particle.PORTAL,
+                    playerLocation,
+                    10,
+                    0.3, 0.3, 0.3,
+                    0.1
+                );
+
+                ticks++;
+            }
+
+        }.runTaskTimer(this, 0, 1);
+    }
+
+    /**
      * Обработчик события размещения блока
      */
     @EventHandler
@@ -68,7 +128,7 @@ public final class Prgcraft_s1_final_scene extends JavaPlugin implements Listene
 
                 @Override
                 public void run() {
-                    if (ticks >= 10 * 20) { // Уменьшено время с 5 до 3 секунд
+                    if (ticks >= 20 * 20) {
                         cancel();
                         return;
                     }
@@ -76,16 +136,28 @@ public final class Prgcraft_s1_final_scene extends JavaPlugin implements Listene
                     // Центрируем сферу по центру блока
                     spawnParticleSphere(
                             blockLocation.getWorld(),
-                            blockLocation.getX() + 0.5, // Центр блока по X
-                            blockLocation.getY() + 2.5, // Центр на высоте +2.5
-                            blockLocation.getZ() + 0.5, // Центр блока по Z
-                            4 // Уменьшен радиус для лучшей производительности
+                            blockLocation.getX() + 0.5,
+                            blockLocation.getY() + 2.5,
+                            blockLocation.getZ() + 0.5,
+                            4
                     );
 
                     ticks++;
                 }
 
-            }.runTaskTimer(this, 0, 1); // Увеличен интервал с 10 до 15 тиков для меньших лагов
+            }.runTaskTimer(this, 0, 1);
+
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    Player player = event.getPlayer();
+                    Location targetLocation = blockLocation.clone().add(0.5, 1, 0.5);
+
+                    pullPlayerToLocation(player, targetLocation, 20 * 20, 0.2, 0.5);
+                }
+
+            }.runTaskLater(this, 5*20);
         }
     }
 }
+
