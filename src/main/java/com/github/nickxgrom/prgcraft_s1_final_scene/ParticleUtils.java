@@ -63,7 +63,6 @@ public class ParticleUtils {
      * @param stopDistance Расстояние, на котором притягивание останавливается
      */
     public void pullPlayerToLocation(Player player, Location targetLocation, double pullStrength, double stopDistance, int banHoldTimer) {
-        GameMode originalGameMode = player.getGameMode();
 
         if (player.isInsideVehicle()) {
             player.leaveVehicle();
@@ -76,8 +75,6 @@ public class ParticleUtils {
 
             @Override
             public void run() {
-
-
                 Location playerLocation = player.getLocation();
                 double distance = playerLocation.distance(targetLocation);
 
@@ -88,10 +85,16 @@ public class ParticleUtils {
                     new BukkitRunnable() {
                         @Override
                         public void run() {
-                            player.sendMessage("бан");
                             player.removePotionEffect(PotionEffectType.BLINDNESS);
                             player.setGravity(true);
-//                            player.ban("конец", (java.time.Duration) null, null);
+
+                            String kickMessage =
+                                    ChatColor.WHITE + "\n\nСезон завершен\n\n" +
+                                    ChatColor.WHITE + "Спасибо за игру!\n\n" +
+                                    ChatColor.GREEN + "Увидимся в следующем сезоне!";
+
+                            player.kick(net.kyori.adventure.text.Component.text( kickMessage));
+                            player.ban(kickMessage, (java.time.Duration) null, null);
                         }
                     }.runTaskLater(plugin, banHoldTimer * 20L);
                     return;
