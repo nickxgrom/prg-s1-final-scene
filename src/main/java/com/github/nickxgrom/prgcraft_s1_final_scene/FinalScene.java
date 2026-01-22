@@ -13,13 +13,15 @@ import org.bukkit.scheduler.BukkitRunnable;
 /**
  * Слушатель событий для обработки убийства дракона
  */
-public class BlockPlaceListener implements Listener {
+public class FinalScene implements Listener {
     private final int PULL_HOLD_TIMER = 10;
-    private final int BAN_HOLD_TIMER = 10;
+    private final int BAN_HOLD_TIMER = 2;
+    private final int SPHERE_LIVE_TIMER = 300;
+    private final int SPHERE_RADIUS = 4;
     private final Prgcraft_s1_final_scene plugin;
     private final ParticleUtils particleUtils;
 
-    public BlockPlaceListener(Prgcraft_s1_final_scene plugin) {
+    public FinalScene(Prgcraft_s1_final_scene plugin) {
         this.plugin = plugin;
         this.particleUtils = new ParticleUtils(plugin);
     }
@@ -43,7 +45,7 @@ public class BlockPlaceListener implements Listener {
 
                 @Override
                 public void run() {
-                    if (ticks >= 300 * 20) {
+                    if (ticks >= SPHERE_LIVE_TIMER * 20) {
                         cancel();
                         return;
                     }
@@ -53,19 +55,18 @@ public class BlockPlaceListener implements Listener {
                             sphereCenter.getX(),
                             sphereCenter.getY(),
                             sphereCenter.getZ(),
-                            5 // Радиус сферы
+                            SPHERE_RADIUS // Радиус сферы
                     );
 
                     // Воспроизводим звук каждые 20 тиков (1 секунда)
                     if (ticks % 20 == 0) {
                         sphereCenter.getWorld().playSound(
                             sphereCenter,
-                            Sound.BLOCK_PORTAL_AMBIENT,
+                            Sound.AMBIENT_BASALT_DELTAS_MOOD,
                             5.0f, // громкость
                             0.8f  // тональность
                         );
                     }
-//                    todo: debug, вылет из сферы, звук
 
 
                     ticks++;
@@ -77,18 +78,11 @@ public class BlockPlaceListener implements Listener {
                 @Override
                 public void run() {
                     for (Player player : endWorld.getPlayers()) {
-                        particleUtils.pullPlayerToLocation(player, sphereCenter, 0.3, 2.0, BAN_HOLD_TIMER);
+                        particleUtils.pullPlayerToLocation(player, sphereCenter, 0.1, 2.0, BAN_HOLD_TIMER);
                     }
                 }
 
             }.runTaskLater(plugin, PULL_HOLD_TIMER * 20);
         }
-    }
-
-    /**
-     * Запускает последовательность эффектов для игрока после убийства дракона
-     */
-    private void startDragonDeathSequence(Player player, Location dragonLocation) {
-        // Этот метод больше не используется
     }
 }

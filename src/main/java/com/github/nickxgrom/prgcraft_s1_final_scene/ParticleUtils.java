@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.ChatPaginator;
 import org.bukkit.util.Vector;
 
 import java.time.Instant;
@@ -81,14 +82,16 @@ public class ParticleUtils {
                 double distance = playerLocation.distance(targetLocation);
 
                 if (distance <= stopDistance) {
-
                     player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 9999, 3, false, false, false));
                     cancel();
 
                     new BukkitRunnable() {
                         @Override
                         public void run() {
-                            player.ban("конец", (java.time.Duration) null, null);
+                            player.sendMessage("бан");
+                            player.removePotionEffect(PotionEffectType.BLINDNESS);
+                            player.setGravity(true);
+//                            player.ban("конец", (java.time.Duration) null, null);
                         }
                     }.runTaskLater(plugin, banHoldTimer * 20L);
                     return;

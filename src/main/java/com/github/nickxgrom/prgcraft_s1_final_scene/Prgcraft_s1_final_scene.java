@@ -7,7 +7,7 @@ public final class Prgcraft_s1_final_scene extends JavaPlugin {
     @Override
     public void onEnable() {
         // Plugin startup logic
-        getServer().getPluginManager().registerEvents(new BlockPlaceListener(this), this);
+        getServer().getPluginManager().registerEvents(new FinalScene(this), this);
     }
 
     @Override
