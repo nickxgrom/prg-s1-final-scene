@@ -2,3 +2,11 @@ name: prgcraft_s1_final_scene
 version: '0.1'
 main: com.github.nickxgrom.prgcraft_s1_final_scene.Prgcraft_s1_final_scene
 api-version: '1.21'
+
+commands:
+  banall:
+    description: Банит всех игроков на сервере (онлайн и оффлайн)
+    usage: /banall
+    permission: prgcraft.banall
+    permission-message: У вас нет прав для выполнения этой команды!
+

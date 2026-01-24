@@ -8,6 +8,11 @@ public final class Prgcraft_s1_final_scene extends JavaPlugin {
     public void onEnable() {
         // Plugin startup logic
         getServer().getPluginManager().registerEvents(new FinalScene(this), this);
+
+        // Регистрируем команду для бана всех игроков
+        if (getCommand("banall") != null) {
+            getCommand("banall").setExecutor(new BanAllCommand(this));
+        }
     }
 
     @Override
