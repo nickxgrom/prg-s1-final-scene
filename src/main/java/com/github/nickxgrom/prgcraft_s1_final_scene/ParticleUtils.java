@@ -1,14 +1,13 @@
 package com.github.nickxgrom.prgcraft_s1_final_scene;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.ChatPaginator;
 import org.bukkit.util.Vector;
-
-import java.time.Instant;
 
 /**
  * Утилитарный класс для работы с частицами и эффектами
@@ -78,9 +77,17 @@ public class ParticleUtils {
                 Location playerLocation = player.getLocation();
                 double distance = playerLocation.distance(targetLocation);
 
-                if (distance <= stopDistance) {
+                if (distance <= 4 && !player.hasPotionEffect(PotionEffectType.BLINDNESS)) {
                     player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 9999, 3, false, false, false));
-                    cancel();
+                }
+
+                if (distance <= stopDistance) {
+                    player.playSound(
+                            player.getLocation(),
+                            Sound.BLOCK_PORTAL_AMBIENT,
+                            5.0f,
+                            0.5f
+                    );
 
                     new BukkitRunnable() {
                         @Override
@@ -88,13 +95,16 @@ public class ParticleUtils {
                             player.removePotionEffect(PotionEffectType.BLINDNESS);
                             player.setGravity(true);
 
-                            String kickMessage =
-                                    ChatColor.WHITE + "\n\nСезон завершен\n\n" +
-                                    ChatColor.WHITE + "Спасибо за игру!\n\n" +
-                                    ChatColor.GREEN + "Увидимся в следующем сезоне!";
+                            Component kickMessage = Component.text()
+                                    .append(Component.text("\n\nСезон завершен\n\n").color(NamedTextColor.WHITE))
+                                    .append(Component.text("Спасибо за игру!\n\n").color(NamedTextColor.WHITE))
+                                    .append(Component.text("Увидимся в следующем сезоне!\n\n").color(NamedTextColor.GREEN))
+                                    .append(Component.text("https://prgcraft.evenfine.name/\n\n").color(NamedTextColor.WHITE))
+                                    .build();
 
-                            player.kick(net.kyori.adventure.text.Component.text( kickMessage));
-                            player.ban(kickMessage, (java.time.Duration) null, null);
+                            player.kick(kickMessage);
+                            // Для бана используем простую строку без форматирования
+                            player.ban("Сезон завершен. Спасибо за игру!", (java.time.Duration) null, null);
                         }
                     }.runTaskLater(plugin, banHoldTimer * 20L);
                     return;
